@@ -1,0 +1,194 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Ubuntu+Mono">
+    <style>
+      body {
+        font-family: 'Ubuntu+Mono', 'Arial';
+        font-size: 24px;
+      }
+    canvas {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        outline: none;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
+        }   
+    </style>
+  </head>
+  <body>
+    <h1 align="center">Monty Hall Simulation</h1>
+    <table align="center">
+    <tbody>
+      <tr>
+        <th>
+          <canvas id="myCanvas" width="600" height="400"></canvas>
+        </th>
+        <th>    
+          <p>Win: <span style="color:green" id="win"></span></p>
+          <p>Loss: <span style="color:red" id="loss"></span></p>
+          <p>Ratio: <span style="font-size:36px" id="ratio"></span>
+        </th>
+      </tr>
+      </tbody>
+    </table>    
+
+    <p align="center"><span id="status"></span></p>
+    <footer align = "right" style="font-size:12px">by @allanino</footer>
+
+    <script>
+      var numWin = 0;
+      var numLoss = 0;
+      var ratioValue = 0.0;
+
+      var win = document.getElementById('win'); 
+      win.innerHTML = numWin;
+
+      var stats = document.getElementById('status');
+      stats.innerHTML = 'Choose a door.';
+
+      var loss = document.getElementById('loss'); 
+      loss.innerHTML = numLoss;
+
+      var ratio = document.getElementById('ratio'); 
+      ratio.innerHTML = ratioValue.toFixed(2);
+
+      var canvas = document.getElementById('myCanvas');
+      var context = canvas.getContext('2d');
+
+      var imageOpenDoor = new Image();
+      var imageCloseDoor = new Image();
+      var imageCheck = new Image();
+      var imageGoat = new Image();
+      var imageCar = new Image();
+
+      // I have to figure out copyright of images. At least I'm showing the original sources. None are mine.
+      imageOpenDoor.src = 'http://th08.deviantart.net/fs71/PRE/i/2012/109/8/d/open_door_png_by_glammgramma-d4wy185.png'
+      imageCloseDoor.src ='http://th01.deviantart.net/fs71/PRE/i/2012/109/6/f/closed_door_png_by_glammgramma-d4wy1cv.png'
+      imageCheck.src = 'http://www.come4news.com/images/users/5454/check.png'
+      imageGoat.src = 'http://images.wikia.com/farmville/images/archive/d/d0/20100221160934!Goat-icon.png'
+      imageCar.src = 'http://0.static.wix.com/media/4cf2d5_724b4b414c884ca60c69384e31e00e2f.png_1024'
+
+      var carDoor = Math.floor(Math.random() * 3);
+      var goatDoors = [];
+      i = -1
+      while(++i < 3) {
+        if (i != carDoor) {goatDoors.push(i)};
+      }
+
+      imageCloseDoor.onload = function() {
+        context.drawImage(imageCloseDoor, 0,0,200, 350);
+        context.drawImage(imageCloseDoor, 200,0,200, 350);
+        context.drawImage(imageCloseDoor, 400,0,200, 350);
+      };
+
+    var doors = [false,false,false];
+    var turn = 0;
+    var check = 0;
+    var openDoor = 0;
+    canvas.addEventListener('click', function(event) {
+    var x = event.pageX -450,
+        y = event.pageY;
+
+      if(turn == -1){
+          // Reset game
+          doors = [false,false,false];
+          check = 0;
+          openDoor = 0;
+          carDoor = Math.floor(Math.random() * 3);
+          goatDoors = [];
+          i = -1
+          while(++i < 3) {
+            if (i != carDoor) {goatDoors.push(i)};
+          }
+          context.clearRect(0,0,canvas.width,canvas.height)
+          context.drawImage(imageCar, carDoor*200+25,150,150, 100);
+          goatDoors.forEach(function(d){
+            context.drawImage(imageGoat, d*200 + 75,180,100, 150);
+          });
+          context.drawImage(imageCloseDoor, 0,0,200, 350);
+          context.drawImage(imageCloseDoor, 200,0,200, 350);
+          context.drawImage(imageCloseDoor, 400,0,200, 350);
+          stats.innerHTML = 'One more time? Choose a door.';
+          ++turn;
+      } else {
+      if (turn == 0){
+        check = 0;
+        if (x < 200 && x > 0) {check = 0;}
+        if (x < 400 && x > 200) {check = 1;}
+        if (x < 600 && x > 400) {check = 2;}
+
+        openDoor = Math.floor(Math.random() * 3);
+        while(openDoor == check || openDoor == carDoor){
+          openDoor = Math.floor(Math.random() * 3);
+        }
+        doors[openDoor] = true;
+        context.clearRect(0,0,canvas.width,canvas.height);
+        context.drawImage(imageCar, carDoor*200+25,150,150, 100);
+        goatDoors.forEach(function(d){
+          context.drawImage(imageGoat, d*200 + 75,180,100, 150);
+        });
+        i = -1;
+        while(++i < 3){
+          if(!doors[i]){
+            context.drawImage(imageCloseDoor, i*200,0,200, 350);
+          }
+          else{
+            context.drawImage(imageOpenDoor, i*200-2,0,212, 370);
+          }
+        }
+        context.drawImage(imageCheck, check*200+50,50,50,50);
+        stats.innerHTML = 'Stay or switch?'
+        ++turn;
+      }
+      else{
+        if (turn > 0){
+          open = 0;
+          if (x < 200 && x > 0) {open = 0;}
+          if (x < 400 && x > 200) {open = 1;}
+          if (x < 600 && x > 400) {open = 2;}
+          if(open == openDoor){
+            return;
+          }
+        doors[open] = true;
+        context.clearRect(0,0,canvas.width,canvas.height)
+        context.drawImage(imageCar, carDoor*200+25,150,150, 100);
+        goatDoors.forEach(function(d){
+          context.drawImage(imageGoat, d*200 + 75,180,100, 150);
+        });
+          i = -1;
+          while(++i < 3){
+            if(!doors[i]){
+               context.drawImage(imageCloseDoor, i*200,0,200, 350);
+            }
+            else{
+               context.drawImage(imageOpenDoor, i*200-2,0,212, 370);
+            }
+          }
+          context.drawImage(imageCheck, check*200+50,50,50,50);
+          if(open == carDoor){
+            ++numWin;
+            stats.innerHTML = 'Congratulations!';
+          }
+          else {
+            ++numLoss;
+            stats.innerHTML = 'Loooooser...';
+          }
+          ratioValue = 1.0*numWin/(numWin+numLoss);
+
+          // Update results
+          win.innerHTML = numWin;
+          loss.innerHTML = numLoss;
+          ratio.innerHTML = ratioValue.toFixed(2);
+
+          turn = -1;
+        };
+      }
+    }
+    }, false);
+    </script>
+  </body>
+</html>
